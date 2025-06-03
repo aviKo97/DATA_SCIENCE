@@ -10,9 +10,9 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 nltk.download('punkt')
 
 # ---------- הגדרות API ----------
-REDDIT_CLIENT_ID = 'mzuTlgCKwtg1w3HFS3522Q'
-REDDIT_SECRET = 'T7NBBHXz8jdhmNYiu-XHAlLbdXrpWw'
-REDDIT_USER_AGENT = "script:creativity:v1.0 (by u/AggressiveJelly3323)"
+REDDIT_CLIENT_ID = ''
+REDDIT_SECRET = ''
+REDDIT_USER_AGENT = "script:creativity:v1.0 (by u/user_name)"
 
 # ---------- התחברות ל-Reddit ----------
 reddit = praw.Reddit(client_id=REDDIT_CLIENT_ID,
