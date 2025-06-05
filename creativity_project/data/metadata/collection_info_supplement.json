@@ -1,0 +1,75 @@
+{
+  "start_time": "2025-06-05T14:35:36.642621",
+  "mode": "supplement",
+  "subreddits": [
+    "news",
+    "buildapc",
+    "politics",
+    "technology",
+    "personalfinance",
+    "relationship_advice",
+    "computerscience",
+    "PhysicsStudents",
+    "premed",
+    "psychologystudents",
+    "philosophy",
+    "AcademicPhilosophy",
+    "WritingPrompts",
+    "Showerthoughts",
+    "explainlikeimfive",
+    "relationships",
+    "LegalAdvice",
+    "art",
+    "AskEngineers",
+    "soccer",
+    "cooking",
+    "askreddit"
+  ],
+  "posts_per_subreddit": 200,
+  "comments_per_post": 20,
+  "min_post_upvotes": 1,
+  "min_comment_score": 1,
+  "results": {
+    "WritingPrompts": {
+      "posts_collected": 200,
+      "comments_collected": 363,
+      "posts_with_comments": 200
+    },
+    "Showerthoughts": {
+      "posts_collected": 200,
+      "comments_collected": 3511,
+      "posts_with_comments": 200
+    },
+    "relationships": {
+      "posts_collected": 200,
+      "comments_collected": 940,
+      "posts_with_comments": 188
+    },
+    "LegalAdvice": {
+      "posts_collected": 200,
+      "comments_collected": 174,
+      "posts_with_comments": 110
+    },
+    "art": {
+      "posts_collected": 200,
+      "comments_collected": 167,
+      "posts_with_comments": 58
+    },
+    "AskEngineers": {
+      "posts_collected": 200,
+      "comments_collected": 970,
+      "posts_with_comments": 189
+    },
+    "cooking": {
+      "posts_collected": 200,
+      "comments_collected": 1259,
+      "posts_with_comments": 193
+    },
+    "askreddit": {
+      "posts_collected": 200,
+      "comments_collected": 1483,
+      "posts_with_comments": 191
+    }
+  },
+  "end_time": "2025-06-05T14:54:23.871381"
+}

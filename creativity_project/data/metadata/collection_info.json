@@ -1,0 +1,84 @@
+{
+  "start_time": "2025-06-05T13:41:07.769065",
+  "subreddits": [
+    "news",
+    "buildapc",
+    "politics",
+    "technology",
+    "personalfinance",
+    "relationship_advice",
+    "computerscience",
+    "PhysicsStudents",
+    "premed",
+    "psychologystudents",
+    "philosophy",
+    "AcademicPhilosophy"
+  ],
+  "posts_per_subreddit": 200,
+  "comments_per_post": 20,
+  "min_post_upvotes": 5,
+  "min_comment_score": 2,
+  "results": {
+    "news": {
+      "posts_collected": 200,
+      "comments_collected": 3035,
+      "posts_with_comments": 200
+    },
+    "buildapc": {
+      "posts_collected": 22,
+      "comments_collected": 197,
+      "posts_with_comments": 22
+    },
+    "politics": {
+      "posts_collected": 200,
+      "comments_collected": 1994,
+      "posts_with_comments": 165
+    },
+    "technology": {
+      "posts_collected": 200,
+      "comments_collected": 1644,
+      "posts_with_comments": 171
+    },
+    "personalfinance": {
+      "posts_collected": 66,
+      "comments_collected": 708,
+      "posts_with_comments": 65
+    },
+    "relationship_advice": {
+      "posts_collected": 93,
+      "comments_collected": 1226,
+      "posts_with_comments": 92
+    },
+    "computerscience": {
+      "posts_collected": 200,
+      "comments_collected": 1169,
+      "posts_with_comments": 187
+    },
+    "PhysicsStudents": {
+      "posts_collected": 200,
+      "comments_collected": 785,
+      "posts_with_comments": 179
+    },
+    "premed": {
+      "posts_collected": 120,
+      "comments_collected": 716,
+      "posts_with_comments": 113
+    },
+    "psychologystudents": {
+      "posts_collected": 108,
+      "comments_collected": 558,
+      "posts_with_comments": 93
+    },
+    "philosophy": {
+      "posts_collected": 39,
+      "comments_collected": 221,
+      "posts_with_comments": 35
+    },
+    "AcademicPhilosophy": {
+      "posts_collected": 182,
+      "comments_collected": 589,
+      "posts_with_comments": 147
+    }
+  },
+  "end_time": "2025-06-05T14:07:41.701319"
+}
