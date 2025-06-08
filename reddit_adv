@@ -1,0 +1,164 @@
+import praw
+import nltk
+import torch
+from wordfreq import zipf_frequency
+import numpy as np
+import math
+from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+from prawcore.exceptions import Forbidden
+
+# ↓ הורידו פעם אחת בלבד, אם עדיין לא עשיתם
+nltk.download('punkt')
+
+# ---------------- CONFIGURATION ----------------
+
+REDDIT_CLIENT_ID = ''
+REDDIT_SECRET = ''
+USER_AGENT = "script:creativity:v1.0 (by u/)"
+
+SUBREDDITS = [
+    'funny', 'AskReddit', 'gaming',
+    'worldnews', 'todayilearned',
+    'aww', 'music', 'memes', 'movies', 'science'
+]
+
+TOP_POSTS_PER_SUB     = 10
+MAX_COMMENTS_PER_POST = 50
+
+# מספר הנושאים ל-LDA
+N_TOPICS = 10
+
+# ------------------------------------------------
+
+def get_reddit():
+    reddit = praw.Reddit(
+        client_id=REDDIT_CLIENT_ID,
+        client_secret=REDDIT_SECRET,
+        user_agent=USER_AGENT
+    )
+    reddit.read_only = True
+    return reddit
+
+def fetch_comments(reddit, sub_name):
+    comments = []
+    sub = reddit.subreddit(sub_name)
+    try:
+        for post in sub.hot(limit=TOP_POSTS_PER_SUB):
+            post.comments.replace_more(limit=0)
+            for i, c in enumerate(post.comments.list()):
+                if i >= MAX_COMMENTS_PER_POST:
+                    break
+                comments.append(c.body)
+    except Forbidden:
+        print(f"[!] לא ניתן לגשת ל־r/{sub_name}, מדלג…")
+    return comments
+
+def tokenize(text):
+    return [t.lower() for t in nltk.word_tokenize(text) if t.isalpha()]
+
+def metric_ttr(tokens):
+    if not tokens:
+        return 0.0
+    return len(set(tokens)) / len(tokens)
+
+def metric_hapax(tokens):
+    if not tokens:
+        return 0.0
+    counts = nltk.FreqDist(tokens)
+    hapaxes = sum(1 for w,c in counts.items() if c == 1)
+    return hapaxes / len(tokens)
+
+def metric_rarity(tokens):
+    if not tokens:
+        return 0.0
+    # zipf_frequency ∈ [1,7]; נמיר ל-[0,1] ב-(7−z)/6
+    rarities = [(7.0 - zipf_frequency(t, 'en'))/6.0 for t in tokens]
+    return float(np.mean(rarities))
+
+def metric_perplexity(comments, model, tok):
+    if not comments:
+        return 0.0
+    perp_vals = []
+    for text in comments:
+        inputs = tok(text, return_tensors='pt', truncation=True, max_length=512)
+        with torch.no_grad():
+            loss = model(**{**inputs, 'labels': inputs['input_ids']}).loss
+        perp = math.exp(loss.item())
+        perp_vals.append(perp)
+    # ממיר ל-[0,1] ע״י מינ–מקס (יתכן שדורש התאמה כשירוץ בפועל)
+    p_min, p_max = min(perp_vals), max(perp_vals)
+    if p_max == p_min:
+        return 1.0
+    return float(np.mean([(p - p_min)/(p_max - p_min) for p in perp_vals]))
+
+def metric_topic_diversity(comments):
+    if len(comments) < N_TOPICS:
+        return 0.0
+    vect = CountVectorizer(stop_words='english', max_features=2000)
+    X = vect.fit_transform(comments)
+    lda = LatentDirichletAllocation(
+        n_components=N_TOPICS,
+        random_state=0,
+        learning_method='batch'
+    )
+    doc_topic = lda.fit_transform(X)  # shape = (n_docs, N_TOPICS)
+    # ממוצע על־פני המסמכים → P(topic)
+    p_topic = np.mean(doc_topic, axis=0)
+    # אנטרופיה ומנרמלת ב־log(N_TOPICS)
+    H = -np.sum([p * math.log(p + 1e-12) for p in p_topic])
+    H_max = math.log(N_TOPICS)
+    return float(H / H_max)
+
+def normalize_dict(d):
+    vals = np.array(list(d.values()), dtype=float)
+    mn, mx = vals.min(), vals.max()
+    if mx == mn:
+        return {k: 1.0 for k in d}
+    return {k: float((v - mn)/(mx - mn)) for k, v in d.items()}
+
+def main():
+    # 1) אתחול
+    reddit = get_reddit()
+    # טען מודל GPT2 (לפרפלקסיטי)
+    tok = GPT2TokenizerFast.from_pretrained('gpt2')
+    model = GPT2LMHeadModel.from_pretrained('gpt2')
+    model.eval()
+    import torch  # אחרי torch נייטיב
+
+    # 2) בצע איסוף וחשב תכונות
+    raw = {
+        'TTR': {},
+        'Hapax': {},
+        'Rarity': {},
+        'Perplexity': {},
+        'TopicDiversity': {}
+    }
+
+    for sub in SUBREDDITS:
+        print(f"Processing r/{sub}…")
+        comments = fetch_comments(reddit, sub)
+        tokens  = [t for c in comments for t in tokenize(c)]
+
+        raw['TTR'][sub]             = metric_ttr(tokens)
+        raw['Hapax'][sub]           = metric_hapax(tokens)
+        raw['Rarity'][sub]          = metric_rarity(tokens)
+        raw['Perplexity'][sub]      = metric_perplexity(comments, model, tok)
+        raw['TopicDiversity'][sub]  = metric_topic_diversity(comments)
+
+    # 3) מנרמל לכל מדד בין 0 ל-1
+    norm = {m: normalize_dict(raw[m]) for m in raw}
+
+    # 4) הצג תוצאות
+    print("\n" + "-"*40)
+    print("Creativity Scores (normalized 0–1):\n")
+    header = "Subreddit".ljust(15) + "".join(f"{m[:6].ljust(12)}" for m in norm)
+    print(header)
+    print("-"*len(header))
+    for sub in SUBREDDITS:
+        line = sub.ljust(15) + "".join(f"{norm[m][sub]:<12.3f}" for m in norm)
+        print(line)
+
+if __name__ == "__main__":
+    main()
